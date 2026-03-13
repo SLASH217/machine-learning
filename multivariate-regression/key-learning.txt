@@ -1,0 +1,20 @@
+1. Data Preprocessing: Handling NA values.
+2. Linear Regression using multiple variables.
+
+
+use fillna(arg) to exchange all cells with nan values with arg.
+
+if you fit with columns like this:
+  reg.fit(df[['area', 'bedrooms','age']], df.price)
+then you also need to predict with columns in the same order:
+  reg.predict(pd.DataFrame([[3000,3,40]],
+            columns=['area','bedrooms','age']))
+otherwise a warning is displayed
+
+Here is multivariate regression there are many independent variables used to predict the dependent variable.
+
+In this case the dependent we are trying to predict using area, bedrooms and age is salary.
+
+
+
+
