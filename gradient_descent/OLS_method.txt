@@ -1,0 +1,20 @@
+How sklearn Calculates Linear Regression (Ordinary Least Squares)
+
+Unlike Gradient Descent, which finds the line of best fit by taking iterative "baby steps" to minimize the cost function, sklearn.linear_model.LinearRegression uses a completely different mathematical approach called Ordinary Least Squares (OLS).
+
+Instead of guessing and adjusting, OLS uses a concept from linear algebra called the Normal Equation to calculate the exact global minimum in a single mathematical step.
+
+The Normal Equation:
+θ=(XTX)−1XTy
+
+(Where θ represents the exact optimal values for both the slope m and intercept b)
+
+Key Takeaways & Comparisons:
+
+    No Hyperparameters: Because OLS solves the problem analytically (like an algebra equation), it does not require a learning_rate, iterations, or tolerance threshold.
+
+    Absolute Precision: It instantly parachutes to the exact bottom of the cost function valley, providing the mathematically perfect answer (which is why its decimal precision differs slightly from a Gradient Descent approximation).
+
+    The Scalability Problem: To solve the Normal Equation, the computer must calculate the inverse of a matrix (XTX)−1. This is incredibly fast for small datasets (like a CSV with a few columns), but computationally impossible for massive datasets with millions of rows and features.
+
+    Why Gradient Descent Matters: For massive datasets, neural networks, and modern deep learning, matrix inversion crashes the computer's memory. Therefore, iterative approximation (Gradient Descent) remains the fundamental engine for training machine learning models.

@@ -1,0 +1,116 @@
+Normally, in algebra we had a given equation:
+Say, y = 2x + 3 where x [1,2,3,4,5]
+
+We would solve for y and find 
+y = [5,7,9,11,13]
+
+However in machine learning, We are given the input and output:
+Through which we try to find out a prediction function.
+
+Cost functions:
+
+1. Mean Square Error: 
+
+squares error -> large mistakes punished more heavily
+
+problem: Sensitive to outliers
+
+This means since the cost function is a mean of of all the errors
+squared a outlier can dominate the loss function, forcing the model to skew to fit that point rather than representing the majority of data.
+
+- For datasets with outliers, Mean absolute Error or Huber loss is more robust.
+
+problem with MAE:
+  Harder to optimize because derivative isn't smooth at 0
+
+The critical concept:
+Since MSE is polynomial with power 2, this means it has a parabolic graph (U), which has a smooth and gradual curve, and is differentiable at all points.
+
+while the MAE uses absolute values which means its graph is a sharp (V) shaped. It turns abruptly at the critical point.
+A critical point is defined as any place on a graph where the derivative is exactly zero or derivative is undefined.
+
+
+What this means in terms of ML:
+
+Training with MSE the minimization of cost function is gradual and slows down automatically when closing in on the minimum.
+
+while MAE slope is constant all the way to the minimum, hence it doesn't naturally slow down. This means it can easily cross over the exact minimum continuously without settling down.
+
+Workout around:
+At exactly 0, we will accept any value between -1 and 1 as a valid substitute for the slope.
+
+3. Root Mean Squared Error 
+
+Units make sense and become interpretable.
+
+4. Huber loss
+
+A hybrid between MSE and MAE.
+
+Small errors -> squared 
+Large errors -> absolute
+
+Used when: 
+- Dataset has outliers 
+- But you still want smooth optimization.
+
+
+
+Gradient Descent :
+
+It is the algorithms that helps us find the best fit line in efficient manner.
+
+
+How does Gradient Descent work?
+
+Basically we are trying to approach the minimum gradually but using derivatives for direction and learning rate for magnitude.
+How can we find the slope of a single point?
+That is what derivatives are for, a small change in x divided by a small change in y, then reduce that towards zero.
+
+differentiating the MSE formula with respect to slope (m) and intercept (b) we get two equations of which are partial derivatives of each variable.
+
+Significance of partial derivatives:
+- Intuitively it is like segregating each variable and it's effect on the function.
+- This gives us isolated control knobs.
+- It tells you exactly how your overall error reacts when you twist only one knob, while supergluing the other knob in place.
+
+
+Gradient descent uses the partial derivative of m and b to find the fastest, steepest route straight down the hill. 
+
+
+
+Floating point trap:
+  Cannot compare two floating point numbers easily in programming.
+
+  workaround : 
+  (previous_cost - cost ) < threshold
+  break early if true
+
+
+How to select learning rate and tolerance:
+
+The Industry Standard Solution: Data Normalization
+
+Because guessing the right threshold for every new dataset is frustrating, the standard practice in machine learning is to bypass the problem entirely by scaling your data first.
+
+Before running gradient descent, data scientists usually "normalize" or "standardize" their x and y arrays so that all values fall neatly between 0 and 1 (or have a mean of 0 and a standard deviation of 1).
+
+When your data is always scaled to the exact same predictable range, you no longer have to guess. You can almost always use a standard learning rate of 0.01 and a standard threshold of 1e-4 to 1e-6, and it will work beautifully across different projects.
+
+
+Common issues in the code:
+Mistake 1: The Learning Rate is Still Too Big
+
+    The Concept: A learning rate of 0.001 feels small to a human, but for data in the 100s, it is still way too fast.
+
+    The Fix: The standard debugging step is to divide your learning rate by 10 repeatedly. If 0.001 explodes, try 0.0001. If that explodes, try 0.00001.
+
+Mistake 2: The Data is Unscaled (The Pro Mistake)
+
+    The Concept: Algorithms hate large, raw numbers. They struggle to balance features that are measured in different scales (like age vs. salary).
+
+    The Fix: Data Normalization. If you scale all your x and y values down so they sit nicely between 0 and 1, the math never explodes, and you can almost always use a standard learning rate like 0.01 without guessing..
+
+
+
+
