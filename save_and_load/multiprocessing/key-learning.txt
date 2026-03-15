@@ -1,0 +1,38 @@
+The __main__ Shield in python programs prevents fork bombs
+
+When we run a normal python script the OS creates a single process
+but when you tell python to run code in parallel, it has to ask the
+OS to create brand new, separate worker processes.
+
+Python does this using a method called Spawning.
+
+1. When a new process is spawned, it starts completely fresh.
+2. It reads the python file top to bottom, important everything
+   into its own isolated memory space.
+
+If we didn't have the Pool.map() or Parallel() within __name__ == __main__
+
+it would keep rereading the portion of code which tells to spawn a worker
+this would cause recursion of spawning workers.
+
+However python assigns __name__ to __main__ only for parent process
+the spawned workers will have __name__ as something else.
+
+Hence, preventing the recursion.
+
+Rule 2:
+Processes do not share memory. Each with own isolated sandbox.
+
+Rule #2: The Pickling Restriction
+Python uses pickle bts for parallel processing.
+  To send a function and its arguments from the main process into a worker process's isolated memory
+  ,Python has to serialize (pickle) them into a byte stream,
+    send them through an OS pipe,
+  and unpickle them on the other side.
+
+The Catch: You cannot pickle everything.
+  If you try to pass an open database connection,
+  a live network socket,
+    or an open file handle (open('file.txt')) to a parallel worker,
+    the code will crash because those OS-level resources cannot be serialized
+    into bytes

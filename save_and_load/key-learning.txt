@@ -1,0 +1,35 @@
+- pickle
+- joblib
+- ONNX (Open neural network exchange)
+- Model drift and MLflow
+- multiprocessing
+- concurrent.futures
+- ray 
+- pyspark and dask
+
+
+
+
+
+
+Learning to save and load the 'brain':
+
+In day 1 excercises we learnt to create a reg variable which is an object of LinearRegression
+
+We are storing this reg into a pickled or joblib-ed file which is a binary file.
+
+pickle and joblib are serialization/deserialization modules.
+
+The pickle module implements binary protocols for serializing and de-serializing
+
+“Pickling” is the process whereby a Python object hierarchy is converted into a byte stream, and “unpickling” is the inverse operation, whereby a byte stream (from a binary file or bytes-like object) is converted back into an object hierarchy.
+
+NOTE: unpickling .pkl or .joblib files are inherently risky since they don't prevent the pickling of malicious code.
+
+Only unpickle code you trust.
+
+both pickle and joblib use dump and load.
+
+joblib saves and loads numpy arrays significantly faster and creates smaller file sizes.
+
+
