@@ -1,0 +1,46 @@
+
+### Why Generators are Slower (The "Context Switch" Tax)
+
+In our previous discussion about how CPython implements `yield`, we talked about how it bundles your function's variables into a "Frame Object" on the heap.
+
+When you use a List Comprehension, Python runs a highly optimized C-loop (`LIST_APPEND`) that just blasts through the math as fast as the CPU allows.
+
+When you use a Generator, Python has to do heavy administrative work for **every single item**:
+
+1. It pauses the function.
+2. It packages the state into the Frame Object.
+3. It hands you the value.
+4. When you ask for the next value, it unpacks the Frame Object.
+5. It figures out which line of code it left off on.
+6. It resumes the math.
+
+If your data easily fits into your RAM, a list comprehension will beat a generator in raw speed every single time because it avoids all of that pausing and unpacking overhead.
+
+### The 3 Major Cons of Generators
+
+Aside from the slight speed penalty per item, saving all that RAM comes with strict functional limitations.
+
+#### 1. They are "One-Time Use" (Exhaustion)
+
+A list is permanent. You can loop over a list, print it, and then loop over it again.
+A generator is a one-way street. Once it yields a value, it forgets it forever. Once the generator finishes its final calculation, it is physically empty.
+
+* If you try to loop over a generator a second time, Python will just do nothing. It won't throw an error; it will just act like the generator is an empty list. To use it again, you have to completely recreate the generator variable from scratch.
+
+#### 2. No Indexing or Slicing
+
+Because the data doesn't physically exist in memory yet, you cannot jump around.
+
+* You **can** do `my_list[500]` to instantly grab the 500th item.
+* You **cannot** do `my_generator[500]`. If you want the 500th item from a generator, you have no choice but to manually call `next()` 500 times, forcing it to calculate and throw away the first 499 items.
+
+#### 3. You Cannot Use `len()`
+
+If you need to know how many items are in your dataset before you process it, a generator is useless.
+
+* Because it evaluates lazily, the generator itself has absolutely no idea how many items it will eventually produce until it hits the very end. If you type `len(my_generator)`, Python will throw a `TypeError`.
+
+### The Golden Rule of Choosing
+
+* **If you need speed, need to jump around the data, or need to loop over it multiple times:** Use a List Comprehension (assuming it fits in your RAM).
+* **If the data is massive, or you only need to read it exactly once from top to bottom:** Use a Generator.
