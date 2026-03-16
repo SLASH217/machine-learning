@@ -1,0 +1,28 @@
+Data sets can consist of non-numerical data like town names, colors, gender etc
+
+These string based data cells are difficult to work with so, One solution is to
+map them to some arbitrary numeric value.
+red   -> 1
+blue  -> 2
+green -> 3
+
+Now this makes it easier to work with but it introduces an issue.
+
+It opens doors to interpretations like make so physical or intuitive sense
+
+here, 1 < 2 < 3 but in actuality it holds no such significance it is just a place holder.
+green is not "greater" than red or blue.
+
+To remove such non-existant relations.
+We use a method called one hot encoding where we assign binary 1's or 0's.
+
+There are two types of categorical values:
+Nominal: colors, townnames etc
+Ordinal : rank, level of education etc
+
+Ordinal values have significance when compared however nominal do not.
+
+For nominal values you create a separate column for each nominal category and assign binary values to them.
+
+The extra variables they produce are called dummy variables.
+

@@ -1,0 +1,28 @@
+We already have understood what a dummy variable is, Now let's understand what dummy variable trap is.
+
+When we have text based data we convert them into separate columns to use one hot encoding method
+to categorize the nominal data.
+
+However, here the columns are highly correlated.
+
+For example if there exists two columns Dog and Cat.
+if we run is_dog() and it returns 1, we are 100% certain that is_cat() will return 0
+
+When variables can perfectly predict each other like this, it is called Perfect Multicollinearity.
+You are feeding the model duplicate information disguised as two different columns.
+
+
+
+The sklearn / Normal Equation Problem:
+Remember the linear algebra formula that sklearn uses to find the perfect bottom of the valley instantly?
+θ=(XTX)−1XTy
+
+The core of that formula requires calculating the inverse of a matrix: (XTX)−1.
+In linear algebra, if two columns in a matrix are perfectly correlated (like our Dog/Cat columns),
+the matrix is mathematically "singular." Attempting to invert a singular matrix is the
+matrix-equivalent of trying to divide by zero.
+Your computer will either throw a massive error or output absolute garbage numbers.
+
+
+The solution is fairly simple, You simply have to drop one column from the dummy columns to
+break the Multicollinearity.
