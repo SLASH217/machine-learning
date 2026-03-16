@@ -1,10 +1,10 @@
 - pickle
 - joblib
-- ONNX (Open neural network exchange)
+- ONNX (Open neural network exchange)  This is used in real world since pickle and joblib can have malicious executeables.
 - Model drift and MLflow
 - multiprocessing
 - concurrent.futures
-- ray 
+- ray
 - pyspark and dask
 
 

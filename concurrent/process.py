@@ -12,6 +12,7 @@ def process_heavy_file(filename):
 
 if __name__ == "__main__":
     files = [f"Image_{i}.png" for i in range(1, 6)]
+    print(files)
     start = time.time()
 
     # We use Processes here because we are pretending this is heavy CPU math
