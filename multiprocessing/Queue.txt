@@ -1,0 +1,18 @@
+belt = multiprocessing.Queue()
+WHAT it creates:
+A queue object that can safely pass data between separate processes. But here's the critical part: a multiprocessing.Queue is not just a Python list in memory.
+
+HOW it works under the hood:
+
+When you call multiprocessing.Queue(), it creates a manager process on your OS that acts as a central broker
+This manager:
+Allocates OS-level pipes (actual inter-process communication channels provided by your kernel)
+Creates locks/semaphores (synchronization primitives) to prevent race conditions
+Sets up serialization infrastructure (pickling) to convert Python objects into bytes that can travel through pipes
+The Queue object you get is essentially a reference/proxy to this manager, not the actual data storage
+WHY this complexity:
+
+Regular Python objects live in a single process's memory space
+You have two separate Python processes with completely isolated memory
+They cannot directly access each other's memory
+The Queue bridges this gap using OS kernel mechanisms

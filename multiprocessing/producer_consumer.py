@@ -37,5 +37,31 @@ if __name__ == '__main__':
     p1.start()
     p2.start()
 
-    p1.join()
-    p2.join()
+    p1.join() # this tells the main process to wait for the p1 and p2 processes to finish before terminating
+    p2.join() # otherwise it would cause orphan processes.
+
+# Solving the producer consumer problem using multiprocessing in python
+
+# Producer -> creates item -> puts in shared pipeline
+
+# Consumer -> consumes item -> removes from shared pipeline
+
+# The actual effect: Producer runs independently in Process 1,
+#  Consumer in Process 2,
+#  they coordinate through OS pipes managed by the Queue's central broker.
+
+# Main Process Timeline:
+# ├─ p1.start() → p1 begins running (doesn't wait, returns immediately)
+# ├─ p2.start() → p2 begins running (doesn't wait, returns immediately)
+# ├─ p1.join() → BLOCKS HERE until p1 finishes
+# │  (p1 and p2 run in parallel while main is blocked)
+# ├─ p2.join() → BLOCKS HERE until p2 finishes
+# └─ Program ends
+
+# P1 (Producer) Timeline:
+# ├─ Create items, put in queue
+# └─ Finish, process exits → wakes main from p1.join()
+
+# P2 (Consumer) Timeline:
+# ├─ Get items from queue, process
+# └─ Receive "DONE", break loop, process exits → wakes main from p2.join()

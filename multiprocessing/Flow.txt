@@ -1,0 +1,19 @@
+Queue created first
+    ↓
+    └─→ Manager process spawned, pipes created
+
+Process object created
+    ↓
+    └─→ Queue reference is serialized into Process config
+
+.start() called
+    ↓
+    └─→ New child process spawned
+    └─→ Serialized queue is sent to child
+    └─→ Child deserializes and connects to same manager pipes
+
+Result: Both processes now have proxy references to same Queue manager
+    ↓
+    └─→ producer() and consumer() can now use belt.put() / belt.get()
+    └─→ These calls go through the pipes to the manager
+    └─→ Manager handles coordination (FIFO ordering, blocking when empty/full)

@@ -1,0 +1,24 @@
+p1 = multiprocessing.Process(target=producer, args=(belt,))
+WHAT it creates:
+A Process object (not yet an actual running process). It's a specification of what to do, not the execution.
+
+HOW it works:
+
+This line does NOT start the process yet — it only creates a configuration object
+
+The Process object stores:
+
+target=producer: the function to execute
+args=(belt,): the arguments to pass to that function
+Internal metadata about stack size, process group, etc.
+Crucially, when you pass belt (the Queue object) as an argument:
+
+Python serializes the Queue object via pickling
+This serialized data is stored in the Process object
+When .start() is called later, this serialized state is sent to the new process
+The new process deserializes it, recreating the connection to the manager's pipes
+WHY this design (target + args):
+
+The function (producer) needs to execute in the new process's namespace
+Arguments must be passed because the new process won't have direct access to your current scope
+You're essentially saying: "In a new process, run producer(belt)"

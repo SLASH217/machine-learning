@@ -1,0 +1,148 @@
+## `multiprocessing.Pool()`
+
+**WHAT it creates:**
+A **worker process pool** — a predetermined group of subprocess "workers" that sit idle, waiting for tasks.
+
+**HOW it works:**
+
+1. When you call `multiprocessing.Pool()` (with no arguments), it detects your CPU count and creates that many worker processes
+   ```
+   Your system has 4 CPU cores → Pool creates 4 worker processes
+   ```
+
+2. Each worker:
+   - Is a separate Python interpreter (just like Process)
+   - Has its own isolated memory space
+   - Starts with the target function (`is_prime`) already loaded
+   - Enters an idle loop: "Give me work"
+
+3. These workers persist for the lifetime of the Pool
+
+**WHY this overhead:**
+- Process creation is expensive (spin up Python interpreter, allocate RAM, etc.)
+- Instead of creating a new process for every number (26,750 numbers = 26,750 process startups), you create workers once and reuse them
+- The workers stay alive, waiting for the next batch of work
+
+---
+
+## `pool.map(is_prime, numbers)`
+
+**WHAT it does:**
+Distributes your list across all worker processes and collects results.
+
+**HOW it works (step by step):**
+
+```
+Input: is_prime function, [n1, n2, n3, ... n26750]
+
+Step 1: Chunking
+├─ Pool divides 26,750 numbers into ~4 chunks (number of workers)
+│  Worker 1: [6687 numbers]
+│  Worker 2: [6687 numbers]
+│  Worker 3: [6687 numbers]
+│  Worker 4: [6688 numbers]
+
+Step 2: Distribution (Pickling)
+├─ Main process pickles each chunk
+├─ Serialized data sent through OS pipes to each worker
+
+Step 3: Parallel Execution
+├─ Worker 1: for n in chunk1: is_prime(n)
+├─ Worker 2: for n in chunk2: is_prime(n)
+├─ Worker 3: for n in chunk3: is_prime(n)
+├─ Worker 4: for n in chunk4: is_prime(n)
+└─ All 4 run simultaneously on different CPU cores
+
+Step 4: Collection (Unpickling)
+├─ Each worker pickles results [True, False, True, ...]
+├─ Results sent back through pipes
+├─ Main process unpickles and reassembles
+└─ Returns: [result1, result2, result3, ... result26750]
+           (in ORIGINAL ORDER, same index as input list)
+```
+
+**The critical detail: `map()` is BLOCKING**
+- Main process calls `pool.map()`
+- Main process **waits** until all workers finish
+- Returns complete results list
+- Only then does `print()` execute
+
+**Why "map" in the name:**
+It's the same concept as Python's built-in `map()`:
+```python
+# Regular map (sequential)
+results = map(is_prime, numbers)
+
+# Pool map (parallel)
+results = pool.map(is_prime, numbers)
+```
+
+Same interface, different execution strategy.
+
+---
+
+## Key Difference from Queue/Process
+
+| Feature | Queue + Process | Pool.map() |
+|---------|-----------------|-----------|
+| **Worker creation** | You create each Process manually | Pool auto-creates workers |
+| **Data passing** | You manually put/get from Queue | Pool handles all pickling/unpickling |
+| **Coordination** | You manage poison pills, synchronization | Pool handles it internally |
+| **Use case** | Producer/Consumer, async work | Data parallelism (same function, many inputs) |
+| **Overhead** | Low if reusing; high if many processes | Upfront (create workers once) |
+
+---
+
+## The Pickling Tax (Why it's Commented)
+
+The file explains the hidden costs:
+
+```python
+# The Pickling Tax: Main process pickles numbers into bytes...
+# The Unpickling Tax: Workers unpickle bytes back into integers...
+# The Return Tax: Workers pickle True/False, main unpickles...
+```
+
+**Concrete example:**
+- 26,750 numbers need to be serialized
+- Each integer is maybe 28 bytes (Python object overhead)
+- Total: ~750 KB sent out
+- 26,750 boolean results sent back
+- All this serialization/deserialization happens **across OS pipes** (slower than RAM)
+
+**The breakeven point:**
+- If each number check takes 0.001 seconds (very fast), total time = 26.75 seconds single-core
+- But serialization tax = ~2 seconds
+- Pool splits across 4 cores = ~6.69 seconds compute + 2 second tax = **worth it**
+
+**The trap (why they show it commented out):**
+- If checking each number was only 0.00001 seconds (trivial), total = 0.267 seconds single-core
+- Pickling tax = 2 seconds
+- **Pool would be 10x slower** because overhead > actual work
+
+---
+
+## The Context Manager (`with`)
+
+```python
+with multiprocessing.Pool() as pool:
+    results = pool.map(is_prime, numbers)
+# Pool auto-terminates and cleans up here
+```
+
+**WHAT it ensures:**
+1. Pool is created on entry
+2. After `pool.map()` finishes, the `__exit__` method runs
+3. This calls `pool.close()` and `pool.join()` automatically
+4. All worker processes are terminated cleanly
+
+**WHY crucial:**
+Without `with`, if you forgot to clean up, worker processes would hang in memory (resource leak).
+
+---
+
+## Abstract Causal Effect
+
+**Pool.map = "Take this list and this function, run the function on the list items in parallel on different cores, give me results in the same order"**
+
+It's a **data parallelism** pattern: same function, lots of data, chop data among cores.
